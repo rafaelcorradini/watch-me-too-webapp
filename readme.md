@@ -1,6 +1,6 @@
-# Watch me too
+# Watch me too webapp
 
-A video player that sync video with another users trought websocket.
+Watch me too webapp. A video player that sync video with another users, trought websocket.
 
 ### Project structure
 
