@@ -1,17 +1,6 @@
+# Watch me too
 
-
-
-
-![Real time change](https://cdn-images-1.medium.com/max/1600/1*0Slpwk3trmF7kLeoFp5UOw.gif)
-
-### Table of contents
-[Project structure](#project-structure)
-
-[Installation](#installation)
-
-[Configuration](#configuration)
-
-[Technologies used](#technologies-used)
+A video player that sync video with another users trought websocket.
 
 ### Project structure
 
