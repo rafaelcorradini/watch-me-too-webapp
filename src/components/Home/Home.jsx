@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { TextInput, Button } from 'grommet';
 import PropTypes from 'prop-types';
-import { Search } from 'grommet-icons';
+import { Search as SearchIcon } from 'grommet-icons';
 import * as uuid from 'uuid/v4';
-import { ToastsStore } from 'react-toasts';
+import Swal from 'sweetalert2';
 import { connect } from 'react-redux';
 
-import style from './style.scss';
-import { roomUpdate } from '../../storage/actions/room';
+import './Home.scss';
+import { roomUpdate } from '../../store/actions/room';
 
 const homeArt = require('../../assets/home-art.svg');
 
@@ -29,7 +29,10 @@ class Home extends Component {
     if (videoUrl.includes('v=')) {
       videoId = videoUrl.split('v=');
     } else {
-      ToastsStore.error('Invalid url! :(');
+      Swal.fire({
+        type: 'error',
+        title: 'Invalid url! :(',
+      });
     }
     dispatch(roomUpdate({ videoId: videoId[1], roomId }));
 
@@ -39,12 +42,12 @@ class Home extends Component {
   render() {
     const { videoUrl } = this.state;
     return (
-      <section className={style.home}>
+      <section className="home">
         <img src={homeArt} alt="home art" />
-        <div className={style.searchContainer}>
-          <Search className={style.searchIcon} />
+        <div className="search-container">
+          <SearchIcon className="search-icon" />
           <TextInput
-            className={style.searchInput}
+            className="search-input"
             value={videoUrl}
             onChange={event => this.setState({ videoUrl: event.target.value })}
             placeholder="Paste your youtube url here to start a room, than share it!  ;)"
@@ -53,7 +56,7 @@ class Home extends Component {
             label="Create Room"
             primary
             reverse={false}
-            className={style.searchButton}
+            className="search-button"
             onClick={this.goToRoom}
           />
         </div>
