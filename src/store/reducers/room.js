@@ -17,10 +17,16 @@ export default (state = initialState, action) => {
       if (!playlist) {
         playlist = [];
       }
-      playlist.push(action.videoId);
+      playlist.push(action.payload);
       return {
         ...state,
         playlist: [...playlist],
+      };
+    }
+    case 'PLAYLIST_UPDATE': {
+      return {
+        ...state,
+        playlist: action.payload,
       };
     }
     case 'PLAYLIST_REMOVE': {

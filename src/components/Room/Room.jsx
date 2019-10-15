@@ -7,11 +7,18 @@ import PropTypes from 'prop-types';
 import * as uuid from 'uuid/v4';
 import { connect } from 'react-redux';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 import './Room.scss';
 import executeCommand from '../../utils/executeCommand';
-import { roomUpdate, playlistAdd, playlistRemove } from '../../store/actions/room';
+import {
+  roomUpdate,
+  playlistAdd,
+  playlistRemove,
+  playlistUpdate,
+} from '../../store/actions/room';
 import commandTypes from '../../constants/commandTypes';
+import Header from '../Header/Header';
 
 class Room extends Component {
   constructor(props) {
@@ -59,12 +66,19 @@ class Room extends Component {
   }
 
   handleAddVideo(event) {
-    const { dispatch } = this.props;
+    const { dispatch, roomId } = this.props;
     const { videoInput } = this.state;
     event.preventDefault();
 
     if (videoInput && videoInput.includes('v=')) {
-      dispatch(playlistAdd(videoInput.split('v=')[1]));
+      dispatch(playlistAdd({
+        video: videoInput.split('v=')[1],
+        token: roomId,
+      }));
+      this.socket.emit('add_playlist_video', { videoId: videoInput.split('v=')[1] });
+      this.setState({
+        videoInput: '',
+      });
     } else {
       Swal.fire({
         type: 'error',
@@ -74,17 +88,26 @@ class Room extends Component {
   }
 
   handleRemoveVideo(event, index) {
-    const { dispatch } = this.props;
+    const { dispatch, playlist } = this.props;
     event.preventDefault();
 
+    this.socket.emit('remove_playlist_video', { id: playlist[index].id });
     dispatch(playlistRemove(index));
+  }
+
+  async fetchPlaylist() {
+    const { dispatch, roomId } = this.props;
+    const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/playlist/${roomId}`);
+    dispatch(playlistUpdate(data));
   }
 
   initSocket(initCommand = null) {
     const { roomId } = this.props;
 
-    this.socket = io(`${process.env.REACT_APP_API_URL}?roomId=${roomId}`);
+    this.socket = io(`${process.env.REACT_APP_API_URL}?roomId=${roomId}&userId=${uuid()}`);
     this.socket.on('command', command => executeCommand(command, this.player));
+    this.socket.on('update_playlist', () => this.fetchPlaylist());
+    this.fetchPlaylist();
 
     if (initCommand) {
       this.socket.on('connect', () => {
@@ -143,6 +166,8 @@ class Room extends Component {
 
     return (
       <div>
+        <Header button="share" />
+
         <section className="add-video">
           <TextInput
             placeholder="Add video to playlist (Enter youtube url)"
@@ -179,12 +204,12 @@ class Room extends Component {
           <section className="playlist">
             <h4>Playlist</h4>
             <ul className="playlist-items">
-              {playlist.map((playlistVideoId, index) => (
-                <li key={playlistVideoId}>
-                  <button type="button" onClick={() => this.handleChangeVideo(playlistVideoId)}>
+              {playlist.map((playlistVideo, index) => (
+                <li key={playlistVideo.video}>
+                  <button type="button" onClick={() => this.handleChangeVideo(playlistVideo.video)}>
                     <img
-                      src={`https://img.youtube.com/vi/${playlistVideoId}/0.jpg`}
-                      alt={playlistVideoId}
+                      src={`https://img.youtube.com/vi/${playlistVideo.video}/0.jpg`}
+                      alt={playlistVideo.video}
                     />
                   </button>
                   <Button

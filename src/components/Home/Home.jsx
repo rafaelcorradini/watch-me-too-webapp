@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 
 import './Home.scss';
 import { roomUpdate } from '../../store/actions/room';
+import Header from '../Header/Header';
 
 const homeArt = require('../../assets/home-art.svg');
 
@@ -17,10 +18,10 @@ class Home extends Component {
     this.state = {
       videoUrl: '',
     };
-    this.goToRoom = this.goToRoom.bind(this);
+    this.createRoom = this.createRoom.bind(this);
   }
 
-  goToRoom() {
+  createRoom() {
     const { videoUrl } = this.state;
     const { history, dispatch } = this.props;
     const roomId = uuid();
@@ -36,32 +37,35 @@ class Home extends Component {
     }
     dispatch(roomUpdate({ videoId: videoId[1], roomId }));
 
-    return history.push(`/room/${roomId}/${videoId[1]}`);
+    return history.push(`/room/${roomId}`);
   }
 
   render() {
     const { videoUrl } = this.state;
     return (
-      <section className="home">
-        <img src={homeArt} alt="home art" />
-        <div className="search-container">
-          <SearchIcon className="search-icon" />
-          <TextInput
-            className="search-input"
-            value={videoUrl}
-            onChange={event => this.setState({ videoUrl: event.target.value })}
-            placeholder="Paste your youtube url here to start a room, than share it!  ;)"
-          />
-          <Button
-            label="Create Room"
-            primary
-            reverse={false}
-            className="search-button"
-            onClick={this.goToRoom}
-          />
-        </div>
-        
-      </section>
+      <div>
+        <Header button="room" />
+        <section className="home">
+          <img src={homeArt} alt="home art" />
+          <div className="search-container">
+            <SearchIcon className="search-icon" />
+            <TextInput
+              className="search-input"
+              value={videoUrl}
+              onChange={event => this.setState({ videoUrl: event.target.value })}
+              placeholder="Paste your youtube url here to start a room, than share it!  ;)"
+            />
+            <Button
+              label="Create Room"
+              primary
+              reverse={false}
+              className="search-button"
+              onClick={this.createRoom}
+            />
+          </div>
+          
+        </section>
+      </div>
     );
   }
 }
