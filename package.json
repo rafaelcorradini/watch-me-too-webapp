@@ -2,7 +2,7 @@
   "name": "watch-me-too",
   "version": "0.8.0",
   "private": true,
-  "homepage": "http://179.100.29.95:8081/sig",
+  "homepage": "https://watchmetoo.rafaelcdacunha.com.br",
   "dependencies": {
     "axios": "^0.19.0",
     "grommet": "^2.7.4",
