@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import './Home.scss';
 import { roomUpdate } from '../../store/actions/room';
 import Header from '../Header/Header';
+import getYoutubeId from '../../utils/getYoutubeId';
 
 const homeArt = require('../../assets/home-art.svg');
 
@@ -25,19 +26,18 @@ class Home extends Component {
     const { videoUrl } = this.state;
     const { history, dispatch } = this.props;
     const roomId = uuid();
-    let videoId;
+    const videoId = getYoutubeId(videoUrl);
 
-    if (videoUrl.includes('v=')) {
-      videoId = videoUrl.split('v=');
+    if (videoId !== videoUrl) {
+      dispatch(roomUpdate({ videoId: videoId[1], roomId }));
+
+      history.push(`/room/${roomId}`);
     } else {
       Swal.fire({
         type: 'error',
         title: 'Invalid url! :(',
       });
     }
-    dispatch(roomUpdate({ videoId: videoId[1], roomId }));
-
-    return history.push(`/room/${roomId}`);
   }
 
   render() {
@@ -63,7 +63,7 @@ class Home extends Component {
               onClick={this.createRoom}
             />
           </div>
-          
+
         </section>
       </div>
     );

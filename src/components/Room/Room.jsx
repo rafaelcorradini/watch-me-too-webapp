@@ -19,6 +19,7 @@ import {
 } from '../../store/actions/room';
 import commandTypes from '../../constants/commandTypes';
 import Header from '../Header/Header';
+import getYoutubeId from '../../utils/getYoutubeId';
 
 class Room extends Component {
   constructor(props) {
@@ -39,17 +40,12 @@ class Room extends Component {
       match,
       roomId,
       dispatch,
-      videoId,
     } = this.props;
-    
+
     if (!match.params.roomId && !roomId) {
       dispatch(roomUpdate({ roomId: uuid() }));
     } else if (match.params.roomId && roomId !== match.params.roomId) {
       dispatch(roomUpdate({ roomId: match.params.roomId }));
-    }
-    
-    if (match.params.videoId && match.params.videoId !== videoId) {
-      dispatch(roomUpdate({ videoId: match.params.videoId }));
     }
 
     if (match.params.roomId) {
@@ -70,12 +66,13 @@ class Room extends Component {
     const { videoInput } = this.state;
     event.preventDefault();
 
-    if (videoInput && videoInput.includes('v=')) {
+    const videoId = getYoutubeId(videoInput);
+    if (videoId) {
       dispatch(playlistAdd({
-        video: videoInput.split('v=')[1],
+        video: videoId,
         token: roomId,
       }));
-      this.socket.emit('add_playlist_video', { videoId: videoInput.split('v=')[1] });
+      this.socket.emit('add_playlist_video', { videoId });
       this.setState({
         videoInput: '',
       });
@@ -102,9 +99,9 @@ class Room extends Component {
   }
 
   initSocket(initCommand = null) {
-    const { roomId } = this.props;
+    const { roomId, videoId } = this.props;
 
-    this.socket = io(`${process.env.REACT_APP_API_URL}?roomId=${roomId}&userId=${uuid()}`);
+    this.socket = io(`${process.env.REACT_APP_API_URL}?roomId=${roomId}&userId=${uuid()}&videoId=${videoId}`);
     this.socket.on('command', command => executeCommand(command, this.player));
     this.socket.on('update_playlist', () => this.fetchPlaylist());
     this.fetchPlaylist();
@@ -133,10 +130,14 @@ class Room extends Component {
   }
 
   emmitCommand(command) {
-    if (!this.socket) {
-      this.initSocket(command);
-    } else {
-      this.socket.emit('command', command);
+    const { roomId } = this.props;
+
+    if (roomId) {
+      if (!this.socket) {
+        this.initSocket(command);
+      } else {
+        this.socket.emit('command', command);
+      }
     }
   }
 
@@ -183,7 +184,7 @@ class Room extends Component {
             onClick={this.handleAddVideo}
           />
         </section>
-        
+
         <section className="content">
           {videoId ? (
             <Box
@@ -195,7 +196,7 @@ class Room extends Component {
                 onReady={this.handlePlayerReady}
                 onStateChange={this.handlePlayerChange}
               />
-              
+
             </Box>
           ) : null}
         </section>
