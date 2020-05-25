@@ -29,7 +29,7 @@ class Home extends Component {
     const videoId = getYoutubeId(videoUrl);
 
     if (videoId !== videoUrl) {
-      dispatch(roomUpdate({ videoId: videoId[1], roomId }));
+      dispatch(roomUpdate({ videoId, roomId }));
 
       history.push(`/room/${roomId}`);
     } else {

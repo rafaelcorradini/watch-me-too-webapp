@@ -1,8 +1,6 @@
 import commandTypes from '../constants/commandTypes';
 
 export default (command, player) => {
-  console.log(command);
-  console.log(player);
   switch (command.type) {
     case commandTypes.JUMP_TO:
       player.seekTo(command.time, true);

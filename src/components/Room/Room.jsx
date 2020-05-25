@@ -27,6 +27,7 @@ class Room extends Component {
     this.props = props;
     this.state = {
       videoInput: '',
+      player: null,
     };
     this.handleAddVideo = this.handleAddVideo.bind(this);
     this.handlePlayerReady = this.handlePlayerReady.bind(this);
@@ -41,6 +42,7 @@ class Room extends Component {
       roomId,
       dispatch,
     } = this.props;
+    const { player } = this.state;
 
     if (!match.params.roomId && !roomId) {
       dispatch(roomUpdate({ roomId: uuid() }));
@@ -48,15 +50,16 @@ class Room extends Component {
       dispatch(roomUpdate({ roomId: match.params.roomId }));
     }
 
-    if (match.params.roomId) {
+    if (roomId && player) {
       this.initSocket();
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate() {
     const { roomId } = this.props;
+    const { player } = this.state;
 
-    if (prevProps.roomId !== roomId) {
+    if (roomId && !this.socket && player) {
       this.initSocket();
     }
   }
@@ -100,9 +103,10 @@ class Room extends Component {
 
   initSocket(initCommand = null) {
     const { roomId, videoId } = this.props;
+    const { player } = this.state;
 
     this.socket = io(`${process.env.REACT_APP_API_URL}?roomId=${roomId}&userId=${uuid()}&videoId=${videoId}`);
-    this.socket.on('command', command => executeCommand(command, this.player));
+    this.socket.on('command', command => executeCommand(command, player));
     this.socket.on('update_playlist', () => this.fetchPlaylist());
     this.fetchPlaylist();
 
@@ -126,7 +130,9 @@ class Room extends Component {
   }
 
   handlePlayerReady({ target }) {
-    this.player = target;
+    this.setState({
+      player: target,
+    });
   }
 
   emmitCommand(command) {
@@ -186,19 +192,17 @@ class Room extends Component {
         </section>
 
         <section className="content">
-          {videoId ? (
-            <Box
-              className="video-box"
-              border={{ color: 'brand', size: 'medium' }}
-            >
-              <YouTube
-                videoId={videoId}
-                onReady={this.handlePlayerReady}
-                onStateChange={this.handlePlayerChange}
-              />
+          <Box
+            className="video-box"
+            border={{ color: 'brand', size: 'medium' }}
+          >
+            <YouTube
+              videoId={videoId}
+              onReady={this.handlePlayerReady}
+              onStateChange={this.handlePlayerChange}
+            />
 
-            </Box>
-          ) : null}
+          </Box>
         </section>
 
         {playlist && playlist.length > 0 ? (
